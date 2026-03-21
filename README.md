@@ -1,22 +1,14 @@
-╔═══════════════════════════════════════════════════════════════════════════╗
-║                                                                           ║
-║   ███╗   ██╗███████╗██╗   ██╗██████╗  ██████╗ ██╗      ██████╗      ██╗██╗██╗  ██╗
-║   ████╗  ██║██╔════╝██║   ██║██╔══██╗██╔═══██╗██║     ██╔═══██╗     ██║██║██║ ██╔╝
-║   ██╔██╗ ██║█████╗  ██║   ██║██████╔╝██║   ██║██║     ██║   ██║     ██║██║█████╔╝ 
-║   ██║╚██╗██║██╔══╝  ██║   ██║██╔══██╗██║   ██║██║     ██║   ██║██   ██║██║██╔═██╗ 
-║   ██║ ╚████║███████╗╚██████╔╝██║  ██║╚██████╔╝███████╗╚██████╔╝╚█████╔╝██║██║  ██╗
-║   ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝ ╚═════╝  ╚════╝ ╚═╝╚═╝  ╚═╝
-║                                                                           ║
-║              🧠 Where Neurons Meet Code, Food & Photography 📸            ║
-║                                                                           ║
-╚═══════════════════════════════════════════════════════════════════════════╝
-```
-
 <div align="center">
 
-### 👋 Hey there, I'm Burak!
+# 🧠 NEUROLOJIK 
 
-**Software Engineer** 💻 | **Neuroscience Enthusiast** 🧠 | **Food Lover** 🍜 | **Photographer** 📷
+### *Where Neurons Meet Code, Food & Photography* 📸
+
+---
+
+**👋 Hey there, I'm Burak!**
+
+💻 Software Engineer | 🧠 Neuroscience Enthusiast | 🍜 Food Lover | 📷 Photographer
 
 ---
 
@@ -30,48 +22,29 @@ I'm a software engineer who's deeply curious about how things work—whether it'
 
 ## 📝 What You'll Find Here
 
-<table>
-<tr>
-<td width="50%">
-
-### 💻 **Tech & Code**
+### 💻 Tech & Code
 - Software engineering practices
 - Cool experiments & side projects  
 - Deep dives into frameworks & tools
 - Problem-solving adventures
 
-</td>
-<td width="50%">
-
-### 🧠 **Neuroscience**
+### 🧠 Neuroscience
 - How our brains actually work
 - Neuropsychology insights
 - The science behind behavior
 - Mind-bending discoveries
 
-</td>
-</tr>
-<tr>
-<td width="50%">
-
-### 🍜 **Food & Cooking**
+### 🍜 Food & Cooking
 - Culinary experiments
 - The neuroscience of taste
 - Recipes worth sharing
 - Food as an experience
 
-</td>
-<td width="50%">
-
-### 📸 **Photography**
+### 📸 Photography
 - Visual storytelling
 - Perception & composition
 - Capturing moments
 - The art of seeing
-
-</td>
-</tr>
-</table>
 
 ## 🎨 The Tech Stack
 
