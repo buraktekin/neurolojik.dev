@@ -71,6 +71,8 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 #cur-dot,#cur-ring{position:fixed;border-radius:50%;pointer-events:none;z-index:99999;mix-blend-mode:screen;transform:translate(-50%,-50%)}
 #cur-dot{width:6px;height:6px;background:var(--cyan);box-shadow:0 0 14px var(--cyan)}
 #cur-ring{width:36px;height:36px;border:1.5px solid rgba(0,212,255,.45);transition:width .18s,height .18s,border-color .2s}
+[data-theme="light"] #cur-dot,[data-theme="sepia"] #cur-dot{mix-blend-mode:normal;background:#0f172a;box-shadow:0 0 14px rgba(15,23,42,.6)}
+[data-theme="light"] #cur-ring,[data-theme="sepia"] #cur-ring{mix-blend-mode:normal;border-color:rgba(15,23,42,.7)}
 @media(max-width:768px){#cur-dot,#cur-ring{display:none}}
 
 /* ════════════════════════════════════════════
@@ -134,9 +136,10 @@ nav#nav.scrolled{background:var(--glass);backdrop-filter:blur(24px);-webkit-back
 /* ════════════════════════════════════════════
    TICKER
 ════════════════════════════════════════════ */
-.ticker-wrap{overflow:hidden;padding:16px 0;background:linear-gradient(90deg,var(--purple-deep),var(--cyan) 60%,var(--purple));transform:rotate(-.4deg);margin:0 -2%;position:relative;z-index:2}
+.ticker-wrap{overflow:hidden;padding:32px 0;background:transparent;transform:rotate(-.4deg);margin:0 -2%;position:relative;z-index:2}
 .ticker{display:flex;width:max-content;animation:tick 28s linear infinite}
-.ticker-item{padding:0 36px;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:4px;color:#000;white-space:nowrap}
+.ticker-item{padding:0 36px;font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:6px;white-space:nowrap;font-weight:900;color:transparent;-webkit-text-stroke:2.5px var(--text);text-stroke:2.5px var(--text)}
+[data-theme="light"] .ticker-item,[data-theme="sepia"] .ticker-item{-webkit-text-stroke:3.5px var(--text);text-stroke:3.5px var(--text)}
 @keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
 /* ════════════════════════════════════════════
@@ -616,7 +619,6 @@ nav.sidebar-nav{flex:1;padding:20px 0;display:flex;flex-direction:column;gap:2px
 .theme-option-desc{font-size:11px;color:var(--text-dim);font-style:italic;line-height:1.4;margin-left:28px}
 .theme-option.active .theme-option-name{color:var(--purple)}
 .theme-option.active .theme-option-desc{color:var(--purple)}
-@media(max-width:768px){.theme-switcher{display:none}}
 
 /* ════════════════════════════════════════════
    LIGHT THEME OVERRIDES

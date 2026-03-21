@@ -206,8 +206,8 @@ export default function Blog() {
       {/* TICKER */}
       <div className="ticker-wrap">
         <div className="ticker">
-          {['Photography', 'Food', 'Travel', 'Life', 'Software Engineering', 
-            'Photography', 'Food', 'Travel', 'Life', 'Software Engineering'].map((s, i) => (
+          {['RECORD', 'EAT', 'TRAVEL', 'CREATE', 'CODE', 'REPEAT',
+            'RECORD', 'EAT', 'TRAVEL', 'CREATE', 'CODE', 'REPEAT'].map((s, i) => (
               <span key={i} className="ticker-item">{s} ·</span>
             ))}
         </div>
