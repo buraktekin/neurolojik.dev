@@ -1,8 +1,15 @@
 <div align="center">
 
-# 🧠 NEUROLOJIK 
+```
+███╗   ██╗███████╗██╗   ██╗██████╗  ██████╗ ██╗      ██████╗      ██╗██╗██╗  ██╗
+████╗  ██║██╔════╝██║   ██║██╔══██╗██╔═══██╗██║     ██╔═══██╗     ██║██║██║ ██╔╝
+██╔██╗ ██║█████╗  ██║   ██║██████╔╝██║   ██║██║     ██║   ██║     ██║██║█████╔╝ 
+██║╚██╗██║██╔══╝  ██║   ██║██╔══██╗██║   ██║██║     ██║   ██║██   ██║██║██╔═██╗ 
+██║ ╚████║███████╗╚██████╔╝██║  ██║╚██████╔╝███████╗╚██████╔╝╚█████╔╝██║██║  ██╗
+╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝ ╚═════╝  ╚════╝ ╚═╝╚═╝  ╚═╝
+```
 
-### *Where Neurons Meet Code, Food & Photography* 📸
+### 🧠 *Where Neurons Meet Code, Food & Photography* 📸
 
 ---
 
@@ -36,7 +43,6 @@ I'm a software engineer who's deeply curious about how things work—whether it'
 
 ### 🍜 Food & Cooking
 - Culinary experiments
-- The neuroscience of taste
 - Recipes worth sharing
 - Food as an experience
 
