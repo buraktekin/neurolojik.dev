@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { BDEFS } from '../../data/blockDefs.js'
 
-export default function BlockRow({ block, idx, onDelete, onAddAfter, openImgPop, dragHandlers }) {
+export default function BlockRow({ block, idx, onDelete, onAddAfter, openImgPop, dragHandlers, thumbnail, setThumbnail }) {
   const contentRef = useRef(null)
   const mountedRef = useRef(false)
 
@@ -10,7 +10,7 @@ export default function BlockRow({ block, idx, onDelete, onAddAfter, openImgPop,
     mountedRef.current = true
     const def = BDEFS[block.type]
     if (!def) return
-    const el = def.render(block.data, openImgPop)
+    const el = def.render(block.data, openImgPop, thumbnail, setThumbnail)
     contentRef.current.appendChild(el)
   }, [])
 

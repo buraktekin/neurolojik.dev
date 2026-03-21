@@ -289,7 +289,11 @@ export const postsService = {
         .from('category_stats')
         .select('*')
       
-      if (error) throw error
+      if (error) {
+        console.warn('Category stats view error:', error.message)
+        // Fallback: Calculate stats manually from posts table
+        return await this.calculateCategoryStatsManually()
+      }
       
       // Transform to object for easier access
       const stats = {}
@@ -307,7 +311,46 @@ export const postsService = {
       return stats
     } catch (error) {
       console.error('Get category stats error:', error)
-      // Return empty stats on error
+      // Fallback to manual calculation
+      return await this.calculateCategoryStatsManually()
+    }
+  },
+
+  /**
+   * Fallback method to calculate category stats manually
+   * Used when category_stats view is not available
+   * @returns {Promise<Object>}
+   */
+  async calculateCategoryStatsManually() {
+    try {
+      const { data: posts, error } = await supabase
+        .from('posts')
+        .select('category, status, featured, published_at, updated_at')
+      
+      if (error) throw error
+      
+      const categories = ['photo', 'food', 'travel', 'life', 'code']
+      const stats = {}
+      
+      categories.forEach(category => {
+        const categoryPosts = posts.filter(p => p.category === category)
+        stats[category] = {
+          total: categoryPosts.length,
+          published: categoryPosts.filter(p => p.status === 'published').length,
+          draft: categoryPosts.filter(p => p.status === 'draft').length,
+          featured: categoryPosts.filter(p => p.featured && p.status === 'published').length,
+          latestPublished: categoryPosts
+            .filter(p => p.published_at)
+            .sort((a, b) => new Date(b.published_at) - new Date(a.published_at))[0]?.published_at,
+          latestUpdated: categoryPosts
+            .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))[0]?.updated_at,
+        }
+      })
+      
+      return stats
+    } catch (error) {
+      console.error('Manual category stats calculation error:', error)
+      // Return empty stats as last resort
       return {
         photo: { total: 0, published: 0, draft: 0, featured: 0 },
         food: { total: 0, published: 0, draft: 0, featured: 0 },

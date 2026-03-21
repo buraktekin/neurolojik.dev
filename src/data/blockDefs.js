@@ -130,25 +130,139 @@ export const BDEFS = {
   },
   image: {
     label:'Image', icon:'🖼', cat:'media',
-    def: () => ({ src:'', caption:'' }),
-    render(data, openImgPop) {
+    def: () => ({ src:'', caption:'', width:'fit' }),
+    render(data, openImgPop, currentThumbnail, setThumbnail) {
       const wrap=document.createElement('div')
+      wrap.className = 'b-image'
       const zone=ce('div','img-zone')
       zone.dataset.src=data.src||''
+      zone.dataset.width=data.width||'fit'
+      
+      // Apply width class based on data
+      if ((data.width || 'fit') === 'full') {
+        wrap.classList.add('img-full-width')
+      }
+      
       if(data.src) {
-        zone.innerHTML=`<img src="${data.src}" alt=""><div class="img-change">Change</div>`
+        const isThumbnail = currentThumbnail === data.src
+        const widthMode = data.width || 'fit'
+        zone.innerHTML=`<img src="${data.src}" alt="">
+          <div class="img-change">Change</div>
+          <button class="img-thumbnail-btn ${isThumbnail ? 'active' : ''}" title="${isThumbnail ? 'Current thumbnail' : 'Set as thumbnail'}">
+            ${isThumbnail ? '★' : '☆'}
+          </button>
+          <button class="img-width-btn" title="Toggle width: ${widthMode === 'fit' ? 'Fit' : 'Full'}">
+            ${widthMode === 'fit' ? '⇔' : '⇿'}
+          </button>`
+        
+        // Add thumbnail button click handler
+        const thumbBtn = zone.querySelector('.img-thumbnail-btn')
+        if (thumbBtn && setThumbnail) {
+          thumbBtn.addEventListener('click', (e) => {
+            e.stopPropagation()
+            if (isThumbnail) {
+              setThumbnail('')
+            } else {
+              setThumbnail(data.src)
+            }
+            thumbBtn.classList.toggle('active')
+            thumbBtn.textContent = thumbBtn.classList.contains('active') ? '★' : '☆'
+            thumbBtn.title = thumbBtn.classList.contains('active') ? 'Current thumbnail' : 'Set as thumbnail'
+          })
+        }
+        
+        // Add width toggle button handler
+        const widthBtn = zone.querySelector('.img-width-btn')
+        if (widthBtn) {
+          widthBtn.addEventListener('click', (e) => {
+            e.stopPropagation()
+            const currentWidth = zone.dataset.width || 'fit'
+            const newWidth = currentWidth === 'fit' ? 'full' : 'fit'
+            zone.dataset.width = newWidth
+            
+            // Toggle class on wrapper
+            if (newWidth === 'full') {
+              wrap.classList.add('img-full-width')
+            } else {
+              wrap.classList.remove('img-full-width')
+            }
+            
+            // Update button
+            widthBtn.textContent = newWidth === 'fit' ? '⇔' : '⇿'
+            widthBtn.title = `Toggle width: ${newWidth === 'fit' ? 'Fit' : 'Full'}`
+          })
+        }
       } else {
         zone.innerHTML=`<div class="img-placeholder"><div class="iph-icon">🖼</div><p>Click to add image</p></div>`
       }
-      zone.addEventListener('click',()=>openImgPop&&openImgPop(src=>{
-        zone.innerHTML=`<img src="${src}" alt=""><div class="img-change">Change</div>`
-        zone.dataset.src=src
-      }))
+      
+      zone.addEventListener('click',(e)=>{
+        // Don't trigger if clicking buttons
+        if (e.target.classList.contains('img-thumbnail-btn') || e.target.classList.contains('img-width-btn')) return
+        openImgPop&&openImgPop(src=>{
+          const isThumbnail = currentThumbnail === src
+          const widthMode = zone.dataset.width || 'fit'
+          zone.innerHTML=`<img src="${src}" alt="">
+            <div class="img-change">Change</div>
+            <button class="img-thumbnail-btn ${isThumbnail ? 'active' : ''}" title="${isThumbnail ? 'Current thumbnail' : 'Set as thumbnail'}">
+              ${isThumbnail ? '★' : '☆'}
+            </button>
+            <button class="img-width-btn" title="Toggle width: ${widthMode === 'fit' ? 'Fit' : 'Full'}">
+              ${widthMode === 'fit' ? '⇔' : '⇿'}
+            </button>`
+          zone.dataset.src=src
+          
+          // Re-add thumbnail button handler
+          const thumbBtn = zone.querySelector('.img-thumbnail-btn')
+          if (thumbBtn && setThumbnail) {
+            thumbBtn.addEventListener('click', (e) => {
+              e.stopPropagation()
+              if (thumbBtn.classList.contains('active')) {
+                setThumbnail('')
+                thumbBtn.classList.remove('active')
+                thumbBtn.textContent = '☆'
+                thumbBtn.title = 'Set as thumbnail'
+              } else {
+                setThumbnail(src)
+                thumbBtn.classList.add('active')
+                thumbBtn.textContent = '★'
+                thumbBtn.title = 'Current thumbnail'
+              }
+            })
+          }
+          
+          // Re-add width button handler
+          const widthBtn = zone.querySelector('.img-width-btn')
+          if (widthBtn) {
+            widthBtn.addEventListener('click', (e) => {
+              e.stopPropagation()
+              const currentWidth = zone.dataset.width || 'fit'
+              const newWidth = currentWidth === 'fit' ? 'full' : 'fit'
+              zone.dataset.width = newWidth
+              
+              if (newWidth === 'full') {
+                wrap.classList.add('img-full-width')
+              } else {
+                wrap.classList.remove('img-full-width')
+              }
+              
+              widthBtn.textContent = newWidth === 'fit' ? '⇔' : '⇿'
+              widthBtn.title = `Toggle width: ${newWidth === 'fit' ? 'Fit' : 'Full'}`
+            })
+          }
+        })
+      })
+      
       const cap=ce('div','img-caption'); cap.contentEditable='true'; cap.dataset.ph='Add a caption…'; cap.innerHTML=data.caption||''
       wrap.appendChild(zone); wrap.appendChild(cap); return wrap
     },
     ser(el) {
-      return { src:el.querySelector('.img-zone')?.dataset.src||'', caption:el.querySelector('.img-caption')?.innerHTML||'' }
+      const zone = el.querySelector('.img-zone')
+      return {
+        src: zone?.dataset.src||'',
+        caption: el.querySelector('.img-caption')?.innerHTML||'',
+        width: zone?.dataset.width||'fit'
+      }
     },
   },
   gallery: {
