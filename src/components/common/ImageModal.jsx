@@ -18,9 +18,12 @@ export default function ImageModal({ src, alt, onClose }) {
   if (!src) return null
   
   return (
-    <div 
-      className="image-modal-overlay" 
-      onClick={onClose}
+    <div
+      className="image-modal-overlay"
+      onClick={(e) => {
+        e.stopPropagation()
+        onClose()
+      }}
       role="dialog"
       aria-modal="true"
       aria-label="Image viewer"

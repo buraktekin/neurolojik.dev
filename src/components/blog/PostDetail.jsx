@@ -121,9 +121,6 @@ export default function PostDetail({ slug, onClose }) {
               {categoryLabels[post.category]}
             </div>
 
-            {/* Title */}
-            <h1 className="post-detail-title">{post.title}</h1>
-
             {/* Meta */}
             <div className="post-detail-meta">
               <span>{new Date(post.published_at || post.created_at).toLocaleDateString('en-US', {

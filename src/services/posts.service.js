@@ -362,26 +362,31 @@ export const postsService = {
   },
 
   /**
-   * Increment view count
+   * Increment view count atomically
    * @param {string} id - Post ID
    * @returns {Promise<void>}
    */
   async incrementViewCount(id) {
     try {
-      // Get current view count
-      const { data: post } = await supabase
-        .from('posts')
-        .select('view_count')
-        .eq('id', id)
-        .single()
+      // Use atomic increment to avoid race conditions
+      // This uses PostgreSQL's built-in increment which is atomic
+      const { error } = await supabase.rpc('increment_view_count', { post_id: id })
       
-      if (!post) return
-      
-      // Increment
-      await supabase
-        .from('posts')
-        .update({ view_count: (post.view_count || 0) + 1 })
-        .eq('id', id)
+      if (error) {
+        // Fallback to manual increment if RPC function doesn't exist
+        const { data: post } = await supabase
+          .from('posts')
+          .select('view_count')
+          .eq('id', id)
+          .single()
+        
+        if (post) {
+          await supabase
+            .from('posts')
+            .update({ view_count: (post.view_count || 0) + 1 })
+            .eq('id', id)
+        }
+      }
     } catch (error) {
       // Silently fail - view count is not critical
       console.warn('Increment view count error:', error)
