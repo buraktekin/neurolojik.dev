@@ -115,6 +115,16 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
+  // Function to open CMS and navigate to editor
+  function openCMSEditor(postId, category) {
+    // Store the post ID and category to edit
+    sessionStorage.setItem('cms_page', 'editor')
+    sessionStorage.setItem('cms_editor_id', postId)
+    sessionStorage.setItem('cms_editor_cat', category)
+    sessionStorage.setItem('cms_open', 'true')
+    setCmsOpen(true)
+  }
+
   return (
     <>
       {/* Custom cursor — hidden on touch */}
@@ -129,7 +139,7 @@ export default function App() {
         // footer tap target
         if (e.target.id === 'tap-target') handleFooterTap()
       }}>
-        <Blog />
+        <Blog onEditPost={openCMSEditor} />
       </div>
 
       {/* CMS overlay */}

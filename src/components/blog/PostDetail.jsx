@@ -1,8 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { usePost } from '../../hooks/usePosts.js'
 import { LoadingSpinner, ErrorMessage } from '../common/LoadingSpinner.jsx'
 import { PostSEO } from '../common/SEO.jsx'
 import { BDEFS } from '../../data/blockDefs.js'
+import ImageModal from '../common/ImageModal.jsx'
 
 /**
  * Post Detail Modal/Page Component
@@ -10,6 +11,8 @@ import { BDEFS } from '../../data/blockDefs.js'
  */
 export default function PostDetail({ slug, onClose }) {
   const { post, loading, error } = usePost(slug)
+  const [modalImage, setModalImage] = useState(null)
+  const contentRef = useRef(null)
 
   // Close on Escape key
   useEffect(() => {
@@ -27,6 +30,25 @@ export default function PostDetail({ slug, onClose }) {
       document.body.style.overflow = ''
     }
   }, [])
+
+  // Add click handlers to images for modal viewing
+  useEffect(() => {
+    if (!contentRef.current) return
+    
+    const handleImageClick = (e) => {
+      const img = e.target.closest('img')
+      if (img && img.src) {
+        setModalImage({ src: img.src, alt: img.alt || 'Image' })
+      }
+    }
+    
+    const content = contentRef.current
+    content.addEventListener('click', handleImageClick)
+    
+    return () => {
+      content.removeEventListener('click', handleImageClick)
+    }
+  }, [post])
 
   if (loading) {
     return (
@@ -127,7 +149,7 @@ export default function PostDetail({ slug, onClose }) {
             )}
 
             {/* Blocks */}
-            <div className="post-detail-blocks">
+            <div className="post-detail-blocks" ref={contentRef}>
               {post.blocks && post.blocks.length > 0 ? (
                 post.blocks.map((block, index) => (
                   <BlockRenderer key={block.id || index} block={block} />
@@ -148,6 +170,15 @@ export default function PostDetail({ slug, onClose }) {
           </div>
         </div>
       </div>
+
+      {/* Image Modal */}
+      {modalImage && (
+        <ImageModal
+          src={modalImage.src}
+          alt={modalImage.alt}
+          onClose={() => setModalImage(null)}
+        />
+      )}
 
       <style>{`
         .post-detail-overlay {
@@ -241,6 +272,12 @@ export default function PostDetail({ slug, onClose }) {
           margin-top: 2rem;
         }
 
+        .block-wrapper {
+          max-width: 100%;
+          overflow: hidden;
+          margin-bottom: 1.5rem;
+        }
+
         .post-detail-footer {
           padding: 1.5rem 2rem;
           border-top: 1px solid var(--card-border);
@@ -288,6 +325,18 @@ export default function PostDetail({ slug, onClose }) {
 
           .post-detail-title {
             font-size: 2rem;
+          }
+
+          .block-wrapper {
+            margin-bottom: 1rem;
+          }
+
+          .b-image .img-zone {
+            min-height: 150px;
+          }
+
+          .b-image .img-zone img {
+            max-height: 400px;
           }
         }
       `}</style>

@@ -26,6 +26,8 @@ export default function Editor({ cat, editId, onBack, onSaved }) {
   const { createPost, updatePost, publishPost } = usePostMutations()
   
   const [blocks, setBlocks] = useState([])
+  const [thumbnail, setThumbnail] = useState('')
+  const [customDate, setCustomDate] = useState('')
   const [pickerOpen, setPickerOpen] = useState(false)
   const [pickerAnchor, setPickerAnchor] = useState(null)
   const [pickerAfter, setPickerAfter] = useState(-1)
@@ -40,7 +42,7 @@ export default function Editor({ cat, editId, onBack, onSaved }) {
   const blocksRef = useRef(blocks)
   blocksRef.current = blocks
 
-  // Initialize blocks when post loads or for new posts
+  // Initialize blocks and thumbnail when post loads or for new posts
   useEffect(() => {
     if (editId && post && post.blocks) {
       // Editing existing post - ensure blocks have IDs
@@ -49,6 +51,7 @@ export default function Editor({ cat, editId, onBack, onSaved }) {
         id: b.id || uid()
       }))
       setBlocks(loadedBlocks)
+      setThumbnail(post.thumbnail || '')
     } else if (!editId && blocks.length === 0) {
       // New post - use template
       const template = TEMPLATES[cat]?.() || []
@@ -84,6 +87,7 @@ export default function Editor({ cat, editId, onBack, onSaved }) {
         title: titleText,
         category: cat,
         blocks: sanitizedBlocks,
+        thumbnail: thumbnail || null,
         status: status === 'published' ? 'published' : 'draft',
       }
 
@@ -226,6 +230,8 @@ export default function Editor({ cat, editId, onBack, onSaved }) {
               onAddAfter={e=>openPicker(idx,e)}
               openImgPop={(cb)=>openImgPop(cb)}
               dragHandlers={makeDragHandlers(idx, block.id)}
+              thumbnail={thumbnail}
+              setThumbnail={setThumbnail}
             />
           ))}
         </div>

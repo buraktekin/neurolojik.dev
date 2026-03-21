@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react'
 import NeuralCanvas from './NeuralCanvas.jsx'
 import PostDetail from './PostDetail.jsx'
 import ThemeSwitcher from '../common/ThemeSwitcher.jsx'
+import PostPlaceholder from '../common/PostPlaceholder.jsx'
 import { SHAPES, LABELS } from '../../data/shapes.js'
 import { usePosts, useCategoryStats } from '../../hooks/usePosts.js'
+import { useAuth } from '../../hooks/useAuth.jsx'
 import { LoadingSpinner, ErrorMessage, EmptyState } from '../common/LoadingSpinner.jsx'
 import { SEO } from '../common/SEO.jsx'
 
@@ -15,7 +17,8 @@ const CAT_META = {
   code:   { color:'var(--purple)', hoverClass:'c-code', icon:'⌨️', label:'Code', desc:'Architecture and things I learned the expensive way.' },
 }
 
-export default function Blog() {
+export default function Blog({ onEditPost }) {
+  const { isAuthenticated } = useAuth()
   const [navScrolled, setNavScrolled] = useState(false)
   const [mobOpen, setMobOpen] = useState(false)
   const [activeShape, setActiveShape] = useState('photo')
@@ -25,9 +28,9 @@ export default function Blog() {
   const [selectedPost, setSelectedPost] = useState(null)
 
   // Fetch posts and category stats
-  const { posts, loading: postsLoading, error: postsError } = usePosts({ 
+  const { posts, loading: postsLoading, error: postsError } = usePosts({
     category: selectedCategory,
-    status: 'published' 
+    status: 'published'
   })
   const { stats, loading: statsLoading } = useCategoryStats()
 
@@ -347,11 +350,13 @@ export default function Blog() {
         ) : (
           <div className="posts-grid">
             {(featuredPosts.length > 0 ? featuredPosts : posts.slice(0, 5)).map((post, index) => (
-              <PostCard 
+              <PostCard
                 key={post.id}
                 post={post}
                 featured={post.featured}
                 onClick={() => handlePostClick(post)}
+                isAuthenticated={isAuthenticated}
+                onEdit={() => onEditPost?.(post.id, post.category)}
               />
             ))}
           </div>
@@ -428,7 +433,7 @@ export default function Blog() {
   )
 }
 
-function PostCard({ post, featured, onClick }) {
+function PostCard({ post, featured, onClick, isAuthenticated, onEdit }) {
   const categoryGradients = {
     photo: 'radial-gradient(ellipse at 20% 80%, rgba(0,212,255,.45), #03030c)',
     food: 'radial-gradient(ellipse at 70% 30%, rgba(255,94,44,.55), #03030c)',
@@ -437,32 +442,56 @@ function PostCard({ post, featured, onClick }) {
     code: 'linear-gradient(135deg, rgba(0,212,255,.3), rgba(168,85,247,.4))',
   }
 
-  const excerpt = post.excerpt || (post.blocks && post.blocks.length > 0 
+  const excerpt = post.excerpt || (post.blocks && post.blocks.length > 0
     ? post.blocks.find(b => b.data?.text)?.data?.text?.substring(0, 120) + '...'
     : 'No excerpt available')
 
   const readTime = post.blocks ? Math.max(1, Math.ceil(post.blocks.length * 0.5)) : 3
 
   return (
-    <div 
+    <div
       className={`post-card${featured ? ' featured' : ''}`}
       onClick={onClick}
-      style={{ cursor: 'pointer' }}
+      style={{ cursor: 'pointer', position: 'relative' }}
     >
+      {isAuthenticated && (
+        <button
+          className="post-edit-btn"
+          onClick={(e) => {
+            e.stopPropagation()
+            onEdit?.()
+          }}
+          title="Edit post"
+        >
+          ✎
+        </button>
+      )}
       <div className="post-thumb">
-        <svg className="post-thumb-bg" viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-          <rect width="100%" height="100%" style={{ fill: categoryGradients[post.category] }} />
-        </svg>
+        {post.thumbnail ? (
+          <img
+            src={post.thumbnail}
+            alt={post.title}
+            className="post-thumb-img"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              display: 'block'
+            }}
+          />
+        ) : (
+          <PostPlaceholder category={post.category} />
+        )}
       </div>
       <div className="post-body">
         <span className={`post-tag tag-${post.category}`}>{CAT_META[post.category].label}</span>
         <h3 className="post-title">{post.title}</h3>
         <p className="post-excerpt">{excerpt}</p>
         <div className="post-meta">
-          <span>{new Date(post.published_at || post.created_at).toLocaleDateString('en-US', { 
-            month: 'short', 
-            day: 'numeric', 
-            year: 'numeric' 
+          <span>{new Date(post.published_at || post.created_at).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
           })}</span>
           <span className="dot" />
           <span>{readTime} min read</span>
