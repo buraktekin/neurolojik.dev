@@ -27,6 +27,11 @@ export default function Editor({ cat, editId, onBack, onSaved }) {
   
   const [blocks, setBlocks] = useState([])
   const [thumbnail, setThumbnail] = useState('')
+  
+  // Wrapper for setThumbnail - just update thumbnail, don't force re-render
+  const handleSetThumbnail = (newThumbnail) => {
+    setThumbnail(newThumbnail)
+  }
   const [customDate, setCustomDate] = useState('')
   const [pickerOpen, setPickerOpen] = useState(false)
   const [pickerAnchor, setPickerAnchor] = useState(null)
@@ -57,7 +62,7 @@ export default function Editor({ cat, editId, onBack, onSaved }) {
       const template = TEMPLATES[cat]?.() || []
       setBlocks(template.map(b => ({ ...b, id: uid() })))
     }
-  }, [editId, post, cat, blocks.length])
+  }, [editId, post, cat])
 
   // drag-drop
   const dragSrcId = useRef(null)
@@ -231,7 +236,7 @@ export default function Editor({ cat, editId, onBack, onSaved }) {
               openImgPop={(cb)=>openImgPop(cb)}
               dragHandlers={makeDragHandlers(idx, block.id)}
               thumbnail={thumbnail}
-              setThumbnail={setThumbnail}
+              setThumbnail={handleSetThumbnail}
             />
           ))}
         </div>

@@ -267,41 +267,215 @@ export const BDEFS = {
   },
   gallery: {
     label:'Gallery', icon:'▦', cat:'media',
-    def: () => ({ images:[{src:''},{src:''},{src:''}] }),
-    render(data, openImgPop) {
-      const d=ce('div','b-gallery')
-      const imgs=data.images||[{src:''},{src:''},{src:''}]
-      // Count how many images have src
-      const filledCount = imgs.filter(img => img.src).length
-      // Set grid layout based on number of filled images
-      if (filledCount === 1) {
-        d.style.gridTemplateColumns = '1fr'
-      } else if (filledCount === 2) {
-        d.style.gridTemplateColumns = '1fr 1fr'
-      } else {
-        d.style.gridTemplateColumns = 'repeat(3, 1fr)'
+    def: () => ({
+      images:[{src:''},{src:''}],
+      slotCount: 2 // User-defined number of slots (2-6)
+    }),
+    render(data, openImgPop, currentThumbnail, setThumbnail) {
+      const wrap = ce('div','b-gallery-wrap')
+      let imgs = data.images || []
+      
+      // Count images that actually have content
+      const actualImageCount = imgs.filter(img => img && img.src).length
+      
+      // Use the larger of slotCount or actualImageCount to ensure all images are shown
+      const slotCount = Math.min(Math.max(actualImageCount, data.slotCount || 2), 6) // Clamp between 2-6
+      
+      // If no CMS functions provided, render for blog (read-only)
+      if (!openImgPop) {
+        const gallery = ce('div', 'b-gallery')
+        gallery.dataset.slotCount = slotCount
+        
+        // Only render images that have src
+        imgs.filter(img => img && img.src).forEach(img => {
+          const slot = ce('div', 'gal-slot')
+          const imgEl = ce('img')
+          imgEl.src = img.src
+          imgEl.alt = img.alt || ''
+          slot.appendChild(imgEl)
+          gallery.appendChild(slot)
+        })
+        
+        return gallery
       }
       
-      imgs.forEach(img=>{
-        const slot=ce('div','gal-slot'); slot.dataset.src=img.src||''
-        if(img.src) slot.innerHTML=`<img src="${img.src}" alt=""><button class="gal-change">Change</button>`
-        else slot.innerHTML=`<div class="gal-ph">📷</div>`
-        slot.addEventListener('click',()=>openImgPop&&openImgPop(src=>{
-          slot.innerHTML=`<img src="${src}" alt=""><button class="gal-change">Change</button>`
-          slot.dataset.src=src
-          // Recount and update layout
-          const filled = [...d.querySelectorAll('.gal-slot')].filter(s => s.dataset.src).length
-          if (filled === 1) d.style.gridTemplateColumns = '1fr'
-          else if (filled === 2) d.style.gridTemplateColumns = '1fr 1fr'
-          else d.style.gridTemplateColumns = 'repeat(3, 1fr)'
-        }))
+      // CMS editing mode - full interactive version
+      // Adjust number of slots to match user-defined count
+      if (imgs.length < slotCount) {
+        // Add empty slots
+        while (imgs.length < slotCount) {
+          imgs.push({src:''})
+        }
+      } else if (imgs.length > slotCount) {
+        // Trim to slot count
+        imgs = imgs.slice(0, slotCount)
+      }
+      
+      // Control bar with slot count selector
+      const controlBar = ce('div','gallery-control-bar')
+      
+      // Slot count selector
+      const slotControl = ce('div', 'gallery-slot-control')
+      slotControl.innerHTML = '<span class="slot-label">Photos:</span>'
+      
+      for (let i = 2; i <= 6; i++) {
+        const slotBtn = ce('button', 'slot-count-btn' + (slotCount === i ? ' active' : ''))
+        slotBtn.textContent = i
+        slotBtn.title = `${i} photos`
+        slotBtn.addEventListener('click', (e) => {
+          e.stopPropagation()
+          wrap.dataset.slotCount = i
+          
+          // Update active state
+          slotControl.querySelectorAll('.slot-count-btn').forEach(b => b.classList.remove('active'))
+          slotBtn.classList.add('active')
+          
+          // Adjust slots
+          const currentSlots = d.querySelectorAll('.gal-slot')
+          if (currentSlots.length < i) {
+            // Add more slots
+            for (let j = currentSlots.length; j < i; j++) {
+              const slot = createGallerySlot(j, '', openImgPop, currentThumbnail, setThumbnail)
+              d.appendChild(slot)
+            }
+          } else if (currentSlots.length > i) {
+            // Remove empty slots from the end
+            for (let j = currentSlots.length - 1; j >= i; j--) {
+              if (!currentSlots[j].dataset.src) {
+                d.removeChild(currentSlots[j])
+              }
+            }
+          }
+          
+        })
+        slotControl.appendChild(slotBtn)
+      }
+      
+      controlBar.appendChild(slotControl)
+      wrap.appendChild(controlBar)
+      
+      // Helper function to create a gallery slot
+      function createGallerySlot(idx, src, openImgPop, currentThumbnail, setThumbnail) {
+        const slot = ce('div','gal-slot')
+        slot.dataset.src = src || ''
+        slot.dataset.idx = idx
+        
+        if (src) {
+          const isThumbnail = currentThumbnail === src
+          slot.innerHTML = `
+            <img src="${src}" alt="">
+            <button class="gal-change">🖼️</button>
+            <button class="gal-delete" title="Delete image">×</button>
+            <button class="img-thumbnail-btn ${isThumbnail ? 'active' : ''}" title="${isThumbnail ? 'Current thumbnail' : 'Set as thumbnail'}">
+              ${isThumbnail ? '★' : '☆'}
+            </button>
+          `
+          
+          // Add all button handlers
+          addGallerySlotHandlers(slot, openImgPop, currentThumbnail, setThumbnail)
+        } else {
+          slot.innerHTML = `<div class="gal-ph">📷</div>`
+        }
+        
+        // Click to add image
+        slot.addEventListener('click', (e) => {
+          // Don't trigger if clicking on buttons
+          if (e.target.tagName === 'BUTTON') return
+          
+          // Only open image picker if slot is empty (check dataset.src)
+          if (!slot.dataset.src || slot.dataset.src === '') {
+            openImgPop && openImgPop(newSrc => {
+              const isThumbnail = currentThumbnail === newSrc
+              slot.innerHTML = `
+                <img src="${newSrc}" alt="">
+                <button class="gal-change">🖼️</button>
+                <button class="gal-delete" title="Delete image">×</button>
+                <button class="img-thumbnail-btn ${isThumbnail ? 'active' : ''}" title="${isThumbnail ? 'Current thumbnail' : 'Set as thumbnail'}">
+                  ${isThumbnail ? '★' : '☆'}
+                </button>
+              `
+              slot.dataset.src = newSrc
+              addGallerySlotHandlers(slot, openImgPop, currentThumbnail, setThumbnail)
+            })
+          }
+        })
+        
+        return slot
+      }
+      
+      // Helper to add all button handlers to a slot
+      function addGallerySlotHandlers(slot, openImgPop, currentThumbnail, setThumbnail) {
+        // Delete button
+        const deleteBtn = slot.querySelector('.gal-delete')
+        if (deleteBtn) {
+          deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation()
+            slot.dataset.src = ''
+            slot.innerHTML = `<div class="gal-ph">📷</div>`
+          })
+        }
+        
+        // Thumbnail button
+        const thumbBtn = slot.querySelector('.img-thumbnail-btn')
+        if (thumbBtn && setThumbnail) {
+          thumbBtn.addEventListener('click', (e) => {
+            e.stopPropagation()
+            if (thumbBtn.classList.contains('active')) {
+              setThumbnail('')
+              thumbBtn.classList.remove('active')
+              thumbBtn.textContent = '☆'
+              thumbBtn.title = 'Set as thumbnail'
+            } else {
+              setThumbnail(slot.dataset.src)
+              thumbBtn.classList.add('active')
+              thumbBtn.textContent = '★'
+              thumbBtn.title = 'Current thumbnail'
+            }
+          })
+        }
+        
+        // Change button
+        const changeBtn = slot.querySelector('.gal-change')
+        if (changeBtn) {
+          changeBtn.addEventListener('click', (e) => {
+            e.stopPropagation()
+            openImgPop && openImgPop(newSrc => {
+              const isThumbnail = currentThumbnail === newSrc
+              slot.innerHTML = `
+                <img src="${newSrc}" alt="">
+                <button class="gal-change">🖼️</button>
+                <button class="gal-delete" title="Delete image">×</button>
+                <button class="img-thumbnail-btn ${isThumbnail ? 'active' : ''}" title="${isThumbnail ? 'Current thumbnail' : 'Set as thumbnail'}">
+                  ${isThumbnail ? '★' : '☆'}
+                </button>
+              `
+              slot.dataset.src = newSrc
+              addGallerySlotHandlers(slot, openImgPop, currentThumbnail, setThumbnail)
+            })
+          })
+        }
+      }
+      
+      const d = ce('div', 'b-gallery')
+      d.dataset.slotCount = slotCount
+      
+      imgs.forEach((img, idx) => {
+        const slot = createGallerySlot(idx, img.src || '', openImgPop, currentThumbnail, setThumbnail)
         d.appendChild(slot)
-      }); return d
+      })
+      wrap.appendChild(d)
+      return wrap
     },
     ser(el) {
-      const images=[]
-      el.querySelector('.b-gallery')?.querySelectorAll('.gal-slot').forEach(s=>images.push({src:s.dataset.src||''}))
-      return {images}
+      const images = []
+      const gallery = el.querySelector('.b-gallery')
+      const slotCount = parseInt(gallery?.dataset.slotCount || '2')
+      el.querySelectorAll('.gal-slot').forEach(s => {
+        images.push({
+          src: s.dataset.src || ''
+        })
+      })
+      return { images, slotCount }
     },
   },
   stats: {
@@ -386,20 +560,69 @@ export const BDEFS = {
   table: {
     label:'Table', icon:'⊞', cat:'data',
     def: () => ({ headers:['Column 1','Column 2','Column 3'], rows:[['','',''],['','',' ']] }),
-    render(data) {
+    render(data, openImgPop) {
       const hdrs=data.headers||['Col 1','Col 2','Col 3']
       const rows=data.rows||[['','']]
       const wrap=document.createElement('div')
+      const isCMS = !!openImgPop // Check if in CMS mode
+      
+      // Column controls (CMS only)
+      if (isCMS) {
+        const colControls=ce('div','table-col-controls')
+        colControls.style.cssText='display:flex;gap:8px;margin-bottom:8px;align-items:center'
+        
+        const colLabel=document.createElement('span')
+        colLabel.textContent='Columns:'
+        colLabel.style.cssText='font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim)'
+        
+        const removeColBtn=ce('button','table-col-btn')
+        removeColBtn.textContent='−'
+        removeColBtn.title='Remove column'
+        removeColBtn.style.cssText='background:var(--bg);border:1px solid var(--card-border);border-radius:6px;width:28px;height:28px;cursor:pointer;transition:all .2s;font-size:16px;font-weight:600;color:var(--text-dim)'
+        
+        const addColBtn=ce('button','table-col-btn')
+        addColBtn.textContent='+'
+        addColBtn.title='Add column'
+        addColBtn.style.cssText='background:var(--bg);border:1px solid var(--card-border);border-radius:6px;width:28px;height:28px;cursor:pointer;transition:all .2s;font-size:16px;font-weight:600;color:var(--text-dim)'
+        
+        colControls.appendChild(colLabel)
+        colControls.appendChild(removeColBtn)
+        colControls.appendChild(addColBtn)
+        wrap.appendChild(colControls)
+        
+        // Add column handler
+        addColBtn.addEventListener('click',()=>{
+          const currentCols=hr.querySelectorAll('th').length
+          if(currentCols>=10) return // Max 10 columns
+          const th=document.createElement('th'); th.contentEditable='true'; th.textContent='New Column'; hr.appendChild(th)
+          tbody.querySelectorAll('tr').forEach(tr=>{ const td=document.createElement('td'); td.contentEditable='true'; tr.appendChild(td) })
+        })
+        
+        // Remove column handler
+        removeColBtn.addEventListener('click',()=>{
+          const currentCols=hr.querySelectorAll('th').length
+          if(currentCols<=1) return // Min 1 column
+          hr.querySelector('th:last-child')?.remove()
+          tbody.querySelectorAll('tr').forEach(tr=>tr.querySelector('td:last-child')?.remove())
+        })
+      }
+      
       const tbl=ce('table','b-table')
       const thead=document.createElement('thead'); const hr=document.createElement('tr')
-      hdrs.forEach(h=>{ const th=document.createElement('th'); th.contentEditable='true'; th.textContent=h; hr.appendChild(th) })
+      hdrs.forEach(h=>{ const th=document.createElement('th'); if(isCMS) th.contentEditable='true'; th.textContent=h; hr.appendChild(th) })
       thead.appendChild(hr); tbl.appendChild(thead)
       const tbody=document.createElement('tbody')
-      rows.forEach(row=>{ const tr=document.createElement('tr'); hdrs.forEach((_,ci)=>{ const td=document.createElement('td'); td.contentEditable='true'; td.textContent=(row&&row[ci])||''; tr.appendChild(td) }); tbody.appendChild(tr) })
+      rows.forEach(row=>{ const tr=document.createElement('tr'); hdrs.forEach((_,ci)=>{ const td=document.createElement('td'); if(isCMS) td.contentEditable='true'; td.textContent=(row&&row[ci])||''; tr.appendChild(td) }); tbody.appendChild(tr) })
       tbl.appendChild(tbody); wrap.appendChild(tbl)
-      const addRowBtn=ce('button','table-add-row'); addRowBtn.textContent='+ Add row'
-      addRowBtn.addEventListener('click',()=>{ const tr=document.createElement('tr'); hdrs.forEach(()=>{ const td=document.createElement('td'); td.contentEditable='true'; tr.appendChild(td) }); tbody.appendChild(tr) })
-      wrap.appendChild(addRowBtn); return wrap
+      
+      // Add row button (CMS only)
+      if (isCMS) {
+        const addRowBtn=ce('button','table-add-row'); addRowBtn.textContent='+ Add row'
+        addRowBtn.addEventListener('click',()=>{ const tr=document.createElement('tr'); hr.querySelectorAll('th').forEach(()=>{ const td=document.createElement('td'); td.contentEditable='true'; tr.appendChild(td) }); tbody.appendChild(tr) })
+        wrap.appendChild(addRowBtn)
+      }
+      
+      return wrap
     },
     ser(el) {
       const tbl=el.querySelector('.b-table'); if(!tbl) return {}

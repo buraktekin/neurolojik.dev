@@ -13,8 +13,9 @@ export default function ImagePopover({ open, anchorRect, onInsert, onClose }) {
 
   if (!open) return null
 
-  const top  = Math.min((anchorRect?.bottom||200)+8, window.innerHeight-360)
-  const left = Math.min((anchorRect?.left||100), window.innerWidth-320)
+  // Center the modal on screen
+  const top  = '50%'
+  const left = '50%'
 
   async function handleFile(file) {
     if (!file || !file.type.startsWith('image/')) return
