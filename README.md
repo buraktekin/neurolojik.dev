@@ -1,33 +1,113 @@
-# Neurolojik
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                                                                           ║
+║   ███╗   ██╗███████╗██╗   ██╗██████╗  ██████╗ ██╗      ██████╗      ██╗██╗██╗  ██╗
+║   ████╗  ██║██╔════╝██║   ██║██╔══██╗██╔═══██╗██║     ██╔═══██╗     ██║██║██║ ██╔╝
+║   ██╔██╗ ██║█████╗  ██║   ██║██████╔╝██║   ██║██║     ██║   ██║     ██║██║█████╔╝ 
+║   ██║╚██╗██║██╔══╝  ██║   ██║██╔══██╗██║   ██║██║     ██║   ██║██   ██║██║██╔═██╗ 
+║   ██║ ╚████║███████╗╚██████╔╝██║  ██║╚██████╔╝███████╗╚██████╔╝╚█████╔╝██║██║  ██╗
+║   ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝ ╚═════╝  ╚════╝ ╚═╝╚═╝  ╚═╝
+║                                                                           ║
+║              🧠 Where Neurons Meet Code, Food & Photography 📸            ║
+║                                                                           ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+```
 
-Hey there! 👋
+<div align="center">
 
-This is my personal blog where I share my thoughts on software engineering, technology, neuroscience, food, photography, and whatever else catches my interest. I built this from scratch because I wanted something that feels uniquely mine—not just another WordPress site or Medium clone.
+### 👋 Hey there, I'm Burak!
 
-## What's This About?
-
-I'm a software engineer fascinated by how things work—whether it's code, brains, or the perfect espresso shot. This blog is where I document my journey, share what I learn, and hopefully help others along the way. You'll find posts about:
-
-- Software development and engineering practices
-- Tech experiments and side projects
-- Thoughts on tools, frameworks, and languages
-- Food and cooking (because eating is basically neuroscience in action)
-- Photography (capturing moments through the lens of perception)
-
-## The Tech Behind It
-
-I built this with React and Vite because I wanted something fast and modern. The design is intentionally minimal—I'm a fan of brutalist aesthetics and letting the content speak for itself. There's also a neural network animation in the background because, well, it looks cool and I'm into that kind of stuff.
-
-The blog supports multiple color themes (dark, light, sepia, and a nord-inspired palette) because I know everyone has their preferences. Pick what works for you.
-
-## Why "Neurolojik"?
-
-It's a play on "neurologic" with a Turkish twist. I'm Turkish, and I'm deeply interested in how neurons, neuroscience, and neuropsychology shape everything we do—from writing code to tasting food to composing a photograph. The name captures that intersection of technology and the human brain. Plus, the domain was available. 🤷‍♂️
-
-## Want to Connect?
-
-Feel free to reach out if you want to chat about tech, neuroscience, food, photography, or just say hi. You can find my contact info on the blog.
+**Software Engineer** 💻 | **Neuroscience Enthusiast** 🧠 | **Food Lover** 🍜 | **Photographer** 📷
 
 ---
 
-Built with ❤️ and probably too much coffee ☕
+</div>
+
+## 🌟 What's This All About?
+
+Welcome to my corner of the internet! This is where I share my thoughts, experiments, and discoveries across the fascinating intersections of technology, neuroscience, food, and photography.
+
+I'm a software engineer who's deeply curious about how things work—whether it's elegant code, the human brain, the perfect espresso shot, or capturing the right moment through a lens. This blog is my playground for exploring these passions and sharing what I learn along the way.
+
+## 📝 What You'll Find Here
+
+<table>
+<tr>
+<td width="50%">
+
+### 💻 **Tech & Code**
+- Software engineering practices
+- Cool experiments & side projects  
+- Deep dives into frameworks & tools
+- Problem-solving adventures
+
+</td>
+<td width="50%">
+
+### 🧠 **Neuroscience**
+- How our brains actually work
+- Neuropsychology insights
+- The science behind behavior
+- Mind-bending discoveries
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### 🍜 **Food & Cooking**
+- Culinary experiments
+- The neuroscience of taste
+- Recipes worth sharing
+- Food as an experience
+
+</td>
+<td width="50%">
+
+### 📸 **Photography**
+- Visual storytelling
+- Perception & composition
+- Capturing moments
+- The art of seeing
+
+</td>
+</tr>
+</table>
+
+## 🎨 The Tech Stack
+
+Built with modern tools for a fast, clean experience:
+
+- ⚛️ **React** - Because components are beautiful
+- ⚡ **Vite** - Lightning-fast development
+- 🎭 **Brutalist Design** - Content first, always
+- 🧬 **Neural Animation** - Because why not?
+
+### 🌈 Multiple Themes
+
+Pick your vibe:
+- 🌙 **Dark** - For the night owls
+- ☀️ **Light** - Clean and bright
+- 📜 **Sepia** - Warm and cozy
+- ❄️ **Nord** - Cool arctic vibes
+
+## 🤔 Why "Neurolojik"?
+
+It's a mashup of "neurologic" with a Turkish twist (I'm Turkish 🇹🇷). The name captures my fascination with how neurons, neuroscience, and neuropsychology shape everything we do—from writing elegant code to savoring a perfect meal to composing a photograph.
+
+Everything we experience, create, and understand flows through our neural networks. That's pretty cool, right?
+
+## 💬 Let's Connect!
+
+Got thoughts to share? Want to collaborate? Just want to say hi? 
+
+Feel free to reach out—you'll find my contact info on the blog. I'm always up for interesting conversations about tech, brains, food, or photography! 🚀
+
+---
+
+<div align="center">
+
+**Built with ❤️ and probably too much ☕**
+
+*Made from scratch because cookie-cutter solutions are boring*
+
+</div>
