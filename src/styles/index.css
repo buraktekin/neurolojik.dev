@@ -67,6 +67,43 @@ body:not(.cms-mode) .tag-plus-btn {
   --glass:rgba(46,52,64,.85);
   --grad:linear-gradient(135deg,var(--cyan),var(--purple));
 }
+
+/* Cyberpunk theme - Neon dystopia */
+:root[data-theme="cyberpunk"]{
+  --bg:#000000;--bg2:#0a0a0a;--bg3:#141414;
+  --cyan:#00ffff;--cyan-dim:rgba(0,255,255,.2);
+  --purple:#ff00ff;--purple-dim:rgba(255,0,255,.2);--purple-deep:#ff00ff;
+  --orange:#ff0080;--green:#00ff41;--yellow:#ffff00;
+  --text:#ffffff;--text-dim:#00ffff;--text-faint:#333333;
+  --card:rgba(255,0,255,.08);--card-border:rgba(0,255,255,.4);
+  --glass:rgba(0,0,0,.95);
+  --grad:linear-gradient(135deg,#ff00ff,#00ffff,#ff0080);
+}
+
+/* Forest theme - Deep woods */
+:root[data-theme="forest"]{
+  --bg:#1a2421;--bg2:#243330;--bg3:#2d4139;
+  --cyan:#4ecdc4;--cyan-dim:rgba(78,205,196,.12);
+  --purple:#9b59b6;--purple-dim:rgba(155,89,182,.12);--purple-deep:#8e44ad;
+  --orange:#e67e22;--green:#2ecc71;--yellow:#f39c12;
+  --text:#d4e4d8;--text-dim:#7a9d8f;--text-faint:#3a4f45;
+  --card:rgba(78,205,196,.04);--card-border:rgba(78,205,196,.15);
+  --glass:rgba(26,36,33,.88);
+  --grad:linear-gradient(135deg,#2ecc71,#4ecdc4);
+}
+
+/* Sunset theme - Golden hour */
+:root[data-theme="sunset"]{
+  --bg:#2d1b2e;--bg2:#3d2a3f;--bg3:#4d3950;
+  --cyan:#ff6b9d;--cyan-dim:rgba(255,107,157,.12);
+  --purple:#c06c84;--purple-dim:rgba(192,108,132,.12);--purple-deep:#a05670;
+  --orange:#ff8c42;--green:#ffd93d;--yellow:#ffb347;
+  --text:#ffe5ec;--text-dim:#d4a5b0;--text-faint:#5d4a52;
+  --card:rgba(255,107,157,.05);--card-border:rgba(255,107,157,.15);
+  --glass:rgba(45,27,46,.9);
+  --grad:linear-gradient(135deg,#ff6b9d,#ff8c42,#ffd93d);
+}
+
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
 

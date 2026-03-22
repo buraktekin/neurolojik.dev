@@ -1,29 +1,47 @@
 import { useState, useEffect, useRef } from 'react'
 
 const THEMES = [
-  { 
-    id: 'dark', 
-    name: 'Dark', 
+  {
+    id: 'dark',
+    name: 'Dark',
     icon: '🌙',
     desc: 'Deep space vibes with neon accents'
   },
-  { 
-    id: 'light', 
-    name: 'Light', 
+  {
+    id: 'light',
+    name: 'Light',
     icon: '☀️',
     desc: 'Clean and bright for daytime reading'
   },
-  { 
-    id: 'sepia', 
-    name: 'Sepia', 
+  {
+    id: 'sepia',
+    name: 'Sepia',
     icon: '📜',
     desc: 'Warm paper tones, easy on the eyes'
   },
-  { 
-    id: 'nord', 
-    name: 'Nord', 
+  {
+    id: 'nord',
+    name: 'Nord',
     icon: '❄️',
     desc: 'Arctic-inspired cool color palette'
+  },
+  {
+    id: 'cyberpunk',
+    name: 'Cyberpunk',
+    icon: '🌃',
+    desc: 'Neon-soaked dystopian future aesthetic'
+  },
+  {
+    id: 'forest',
+    name: 'Forest',
+    icon: '🌲',
+    desc: 'Deep woods with natural earth tones'
+  },
+  {
+    id: 'sunset',
+    name: 'Sunset',
+    icon: '🌅',
+    desc: 'Warm golden hour gradient vibes'
   }
 ]
 
