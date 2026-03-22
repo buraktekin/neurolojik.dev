@@ -24,15 +24,37 @@ export default function Blog({ onEditPost }) {
   const [activeShape, setActiveShape] = useState('photo')
   const [shapeLbl, setShapeLbl] = useState(LABELS[0])
   const [shapeVis, setShapeVis] = useState(true)
-  const [selectedCategory, setSelectedCategory] = useState(null)
+  const [selectedCategories, setSelectedCategories] = useState([])
   const [selectedPost, setSelectedPost] = useState(null)
+  const [showFilters, setShowFilters] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Fetch posts and category stats
   const { posts, loading: postsLoading, error: postsError } = usePosts({
-    category: selectedCategory,
     status: 'published'
   })
   const { stats, loading: statsLoading } = useCategoryStats()
+
+  // Filter posts by selected categories and search query
+  let filteredPosts = posts
+
+  // Apply category filter
+  if (selectedCategories.length > 0) {
+    filteredPosts = filteredPosts.filter(post => selectedCategories.includes(post.category))
+  }
+
+  // Apply search filter
+  if (searchQuery.trim()) {
+    const query = searchQuery.toLowerCase()
+    filteredPosts = filteredPosts.filter(post => {
+      const titleMatch = post.title?.toLowerCase().includes(query)
+      const excerptMatch = post.excerpt?.toLowerCase().includes(query)
+      const blocksMatch = post.blocks?.some(block =>
+        block.data?.text?.toLowerCase().includes(query)
+      )
+      return titleMatch || excerptMatch || blocksMatch
+    })
+  }
 
   // Featured posts (limit 5)
   const featuredPosts = posts.filter(p => p.featured).slice(0, 5)
@@ -60,16 +82,16 @@ export default function Blog({ onEditPost }) {
   useEffect(() => {
     const els = document.querySelectorAll('.reveal')
     const obs = new IntersectionObserver(entries => {
-      entries.forEach(e => { 
-        if (e.isIntersecting) { 
+      entries.forEach(e => {
+        if (e.isIntersecting) {
           e.target.classList.add('vis')
-          obs.unobserve(e.target) 
-        } 
+          obs.unobserve(e.target)
+        }
       })
     }, { threshold: 0.1 })
     els.forEach(el => obs.observe(el))
     return () => obs.disconnect()
-  }, [posts]) // Re-run when posts change
+  }, [posts, selectedCategories, searchQuery, showFilters]) // Re-run when filters change
 
   function handlePillClick(e, shape) {
     e.preventDefault()
@@ -89,9 +111,30 @@ export default function Blog({ onEditPost }) {
   }
 
   function handleCategoryClick(category) {
-    setSelectedCategory(selectedCategory === category ? null : category)
+    // Toggle category in array
+    setSelectedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    )
+    // Show filters when a category is clicked
+    setShowFilters(true)
     // Scroll to blog section
     document.getElementById('featured')?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  function toggleCategoryFilter(category) {
+    setSelectedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    )
+  }
+
+  function clearAllFilters() {
+    setSelectedCategories([])
+    setSearchQuery('')
+    setShowFilters(false)
   }
 
   function handlePostClick(post) {
@@ -261,24 +304,6 @@ export default function Blog({ onEditPost }) {
       <section id="categories">
         <p className="section-label reveal">Topics</p>
         <h2 className="section-title reveal rd1">What I write about</h2>
-        {selectedCategory && (
-          <p className="reveal rd2" style={{ textAlign: 'center', color: 'var(--text-dim)', marginBottom: '1rem' }}>
-            Filtering by: <strong style={{ color: 'var(--cyan)' }}>{CAT_META[selectedCategory].label}</strong>
-            {' '}
-            <button 
-              onClick={() => setSelectedCategory(null)}
-              style={{ 
-                background: 'none', 
-                border: 'none', 
-                color: 'var(--cyan)', 
-                cursor: 'pointer',
-                textDecoration: 'underline'
-              }}
-            >
-              (clear)
-            </button>
-          </p>
-        )}
         <div className="cats-grid">
           {statsLoading ? (
             <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem' }}>
@@ -288,9 +313,9 @@ export default function Blog({ onEditPost }) {
             Object.entries(CAT_META).map(([key, meta], i) => {
               const count = stats[key]?.published || 0
               return (
-                <div 
-                  key={key} 
-                  className={`cat-card ${meta.hoverClass} reveal rd${i + 1}${selectedCategory === key ? ' active' : ''}`}
+                <div
+                  key={key}
+                  className={`cat-card ${meta.hoverClass} reveal rd${i + 1}${selectedCategories.includes(key) ? ' active' : ''}`}
                   onClick={() => handleCategoryClick(key)}
                   style={{ cursor: 'pointer' }}
                 >
@@ -307,11 +332,60 @@ export default function Blog({ onEditPost }) {
 
       {/* FEATURED POSTS */}
       <section id="featured">
+        {/* Filter Bar (shown when category clicked) */}
+        {showFilters && (
+          <div className="category-filter-bar">
+            {/* Search Input */}
+            <div className="search-container">
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Search posts..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <span className="search-icon">🔍</span>
+            </div>
+
+            {/* Category Filter Chips */}
+            <div className="filter-chips">
+              {Object.entries(CAT_META).map(([key, meta]) => {
+                const count = stats[key]?.published || 0
+                const isActive = selectedCategories.includes(key)
+                return (
+                  <button
+                    key={key}
+                    className={`filter-chip${isActive ? ' active' : ''}`}
+                    onClick={() => toggleCategoryFilter(key)}
+                    style={{
+                      borderColor: isActive ? meta.color : 'var(--card-border)',
+                      color: isActive ? meta.color : 'var(--text-dim)'
+                    }}
+                  >
+                    <span className="filter-chip-icon">{meta.icon}</span>
+                    <span className="filter-chip-label">{meta.label}</span>
+                    <span className="filter-chip-count">{count}</span>
+                  </button>
+                )
+              })}
+              <button
+                className="filter-chip clear-chip"
+                onClick={clearAllFilters}
+              >
+                Clear all
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="posts-header">
           <div>
             <p className="section-label reveal">Latest</p>
             <h2 className="section-title reveal rd1">
-              {selectedCategory ? `${CAT_META[selectedCategory].label} Posts` : 'Featured posts'}
+              {selectedCategories.length > 0 || searchQuery.trim()
+                ? `Filtered Posts (${filteredPosts.length})`
+                : 'Featured posts'
+              }
             </h2>
           </div>
         </div>
@@ -322,17 +396,17 @@ export default function Blog({ onEditPost }) {
           </div>
         ) : postsError ? (
           <ErrorMessage error={postsError} />
-        ) : posts.length === 0 ? (
+        ) : filteredPosts.length === 0 ? (
           <EmptyState
             icon="📝"
-            title="No posts yet"
-            message={selectedCategory 
-              ? `No posts in ${CAT_META[selectedCategory].label} category yet.`
+            title="No posts found"
+            message={selectedCategories.length > 0
+              ? `No posts found in the selected ${selectedCategories.length === 1 ? 'category' : 'categories'}.`
               : "Start creating posts in the CMS to see them here!"
             }
-            action={selectedCategory && (
-              <button 
-                onClick={() => setSelectedCategory(null)}
+            action={selectedCategories.length > 0 && (
+              <button
+                onClick={() => setSelectedCategories([])}
                 style={{
                   padding: '0.75rem 1.5rem',
                   background: 'var(--grad)',
@@ -349,7 +423,10 @@ export default function Blog({ onEditPost }) {
           />
         ) : (
           <div className="posts-grid">
-            {(featuredPosts.length > 0 ? featuredPosts : posts.slice(0, 5)).map((post, index) => (
+            {(selectedCategories.length === 0 && featuredPosts.length > 0
+              ? featuredPosts
+              : filteredPosts.slice(0, 5)
+            ).map((post, index) => (
               <PostCard
                 key={post.id}
                 post={post}
@@ -374,7 +451,7 @@ export default function Blog({ onEditPost }) {
       </section>
 
       {/* LATEST */}
-      {!selectedCategory && latestPosts.length > 0 && (
+      {selectedCategories.length === 0 && latestPosts.length > 0 && (
         <section id="latest">
           <p className="section-label reveal">Archive</p>
           <h2 className="section-title reveal rd1">More reading</h2>
