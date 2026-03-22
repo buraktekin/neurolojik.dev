@@ -190,7 +190,7 @@ section{padding:120px 8vw}
 ════════════════════════════════════════════ */
 #about{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
 .about-left .big-text{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,7vw,110px);line-height:.88;letter-spacing:2px}
-.big-text .ol{color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.08)}
+.big-text .ol{color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.35)}
 .big-text .fl{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .about-right p{font-size:17px;font-weight:300;line-height:1.85;color:var(--text-dim);margin-bottom:22px}
 .about-right p strong{color:var(--text);font-weight:400}
