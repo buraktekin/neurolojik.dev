@@ -29,12 +29,16 @@ export default function BlockRow({ block, idx, onDelete, onAddAfter, openImgPop,
         className="block-row"
         data-block-id={block.id}
         data-idx={idx}
-        draggable
-        {...dragHandlers}
         onMouseEnter={e => { e.currentTarget.querySelector('.block-handle')?.style && (e.currentTarget.querySelector('.block-handle').style.opacity='1'); e.currentTarget.querySelector('.block-del')?.style && (e.currentTarget.querySelector('.block-del').style.opacity='1') }}
         onMouseLeave={e => { e.currentTarget.querySelector('.block-handle')?.style && (e.currentTarget.querySelector('.block-handle').style.opacity='0'); e.currentTarget.querySelector('.block-del')?.style && (e.currentTarget.querySelector('.block-del').style.opacity='0') }}
       >
-        <div className="block-handle" title="Drag to reorder" style={{opacity:0,transition:'opacity .15s',cursor:'grab'}}>
+        <div
+          className="block-handle"
+          title="Drag to reorder"
+          style={{opacity:0,transition:'opacity .15s',cursor:'grab'}}
+          draggable
+          {...dragHandlers}
+        >
           <svg width="10" height="14" viewBox="0 0 10 14"><circle cx="3" cy="2.5" r="1.5" fill="currentColor"/><circle cx="7" cy="2.5" r="1.5" fill="currentColor"/><circle cx="3" cy="7" r="1.5" fill="currentColor"/><circle cx="7" cy="7" r="1.5" fill="currentColor"/><circle cx="3" cy="11.5" r="1.5" fill="currentColor"/><circle cx="7" cy="11.5" r="1.5" fill="currentColor"/></svg>
         </div>
         <div className="block-content" ref={contentRef}/>

@@ -27,30 +27,60 @@ export const BDEFS = {
   },
   h1: {
     label:'Heading 1', icon:'H1', cat:'text',
-    def: () => ({ text:'' }),
+    def: () => ({ text:'', desc:'' }),
     render(data) {
+      const wrap=ce('div','b-h1-wrap')
       const d=ce('div','b-h1'); d.contentEditable='true'; d.dataset.ph='Title'
-      d.textContent=data.text||''; return d
+      d.textContent=data.text||''
+      const desc=ce('div','b-h-desc'); desc.contentEditable='true'; desc.dataset.ph='Optional description...'
+      desc.textContent=data.desc||''
+      wrap.appendChild(d); wrap.appendChild(desc)
+      return wrap
     },
-    ser(el) { return { text: qs(el,'.b-h1')?.textContent||'' } },
+    ser(el) {
+      return {
+        text: qs(el,'.b-h1')?.textContent||'',
+        desc: qs(el,'.b-h-desc')?.textContent||''
+      }
+    },
   },
   h2: {
     label:'Heading 2', icon:'H2', cat:'text',
-    def: () => ({ text:'' }),
+    def: () => ({ text:'', desc:'' }),
     render(data) {
+      const wrap=ce('div','b-h2-wrap')
       const d=ce('div','b-h2'); d.contentEditable='true'; d.dataset.ph='Section heading'
-      d.textContent=data.text||''; return d
+      d.textContent=data.text||''
+      const desc=ce('div','b-h-desc'); desc.contentEditable='true'; desc.dataset.ph='Optional description...'
+      desc.textContent=data.desc||''
+      wrap.appendChild(d); wrap.appendChild(desc)
+      return wrap
     },
-    ser(el) { return { text: qs(el,'.b-h2')?.textContent||'' } },
+    ser(el) {
+      return {
+        text: qs(el,'.b-h2')?.textContent||'',
+        desc: qs(el,'.b-h-desc')?.textContent||''
+      }
+    },
   },
   h3: {
     label:'Heading 3', icon:'H3', cat:'text',
-    def: () => ({ text:'' }),
+    def: () => ({ text:'', desc:'' }),
     render(data) {
+      const wrap=ce('div','b-h3-wrap')
       const d=ce('div','b-h3'); d.contentEditable='true'; d.dataset.ph='Subheading'
-      d.textContent=data.text||''; return d
+      d.textContent=data.text||''
+      const desc=ce('div','b-h-desc'); desc.contentEditable='true'; desc.dataset.ph='Optional description...'
+      desc.textContent=data.desc||''
+      wrap.appendChild(d); wrap.appendChild(desc)
+      return wrap
     },
-    ser(el) { return { text: qs(el,'.b-h3')?.textContent||'' } },
+    ser(el) {
+      return {
+        text: qs(el,'.b-h3')?.textContent||'',
+        desc: qs(el,'.b-h-desc')?.textContent||''
+      }
+    },
   },
   quote: {
     label:'Quote', icon:'"', cat:'text',
@@ -130,30 +160,40 @@ export const BDEFS = {
   },
   image: {
     label:'Image', icon:'🖼', cat:'media',
-    def: () => ({ src:'', caption:'', width:'fit' }),
+    def: () => ({ src:'', caption:'', width:'fit', cropX: 50, cropY: 50 }),
     render(data, openImgPop, currentThumbnail, setThumbnail) {
       const wrap=document.createElement('div')
       wrap.className = 'b-image'
       const zone=ce('div','img-zone')
       zone.dataset.src=data.src||''
       zone.dataset.width=data.width||'fit'
+      zone.dataset.cropX=data.cropX||50
+      zone.dataset.cropY=data.cropY||50
       
       // Apply width class based on data
-      if ((data.width || 'fit') === 'full') {
+      const widthMode = data.width || 'fit'
+      if (widthMode === 'full') {
         wrap.classList.add('img-full-width')
       }
       
       if(data.src) {
         const isThumbnail = currentThumbnail === data.src
         const widthMode = data.width || 'fit'
-        zone.innerHTML=`<img src="${data.src}" alt="">
+        const cropX = data.cropX || 50
+        const cropY = data.cropY || 50
+        const needsCrop = widthMode === 'full'
+        const imgStyle = needsCrop ? `style="object-position: ${cropX}% ${cropY}%"` : ''
+        const widthIcon = widthMode === 'fit' ? '⇔' : '⇿'
+        const widthTitle = widthMode === 'fit' ? 'Fit' : 'Full'
+        zone.innerHTML=`<img src="${data.src}" alt="" ${imgStyle}>
           <div class="img-change">Change</div>
           <button class="img-thumbnail-btn ${isThumbnail ? 'active' : ''}" title="${isThumbnail ? 'Current thumbnail' : 'Set as thumbnail'}">
             ${isThumbnail ? '★' : '☆'}
           </button>
-          <button class="img-width-btn" title="Toggle width: ${widthMode === 'fit' ? 'Fit' : 'Full'}">
-            ${widthMode === 'fit' ? '⇔' : '⇿'}
-          </button>`
+          <button class="img-width-btn" title="Width: ${widthTitle}">
+            ${widthIcon}
+          </button>
+          ${needsCrop ? '<button class="img-crop-btn" title="Adjust crop position">✂️</button>' : ''}`
         
         // Add thumbnail button click handler
         const thumbBtn = zone.querySelector('.img-thumbnail-btn')
@@ -171,7 +211,7 @@ export const BDEFS = {
           })
         }
         
-        // Add width toggle button handler
+        // Add width toggle button handler (toggles: fit ↔ full)
         const widthBtn = zone.querySelector('.img-width-btn')
         if (widthBtn) {
           widthBtn.addEventListener('click', (e) => {
@@ -180,36 +220,147 @@ export const BDEFS = {
             const newWidth = currentWidth === 'fit' ? 'full' : 'fit'
             zone.dataset.width = newWidth
             
-            // Toggle class on wrapper
+            // Update wrapper classes
+            wrap.classList.remove('img-full-width')
             if (newWidth === 'full') {
               wrap.classList.add('img-full-width')
-            } else {
-              wrap.classList.remove('img-full-width')
             }
             
             // Update button
-            widthBtn.textContent = newWidth === 'fit' ? '⇔' : '⇿'
-            widthBtn.title = `Toggle width: ${newWidth === 'fit' ? 'Fit' : 'Full'}`
+            const widthIcon = newWidth === 'fit' ? '⇔' : '⇿'
+            const widthTitle = newWidth === 'fit' ? 'Fit' : 'Full'
+            widthBtn.textContent = widthIcon
+            widthBtn.title = `Width: ${widthTitle}`
+            
+            // Add or remove crop button
+            const img = zone.querySelector('img')
+            const needsCrop = newWidth === 'full'
+            if (needsCrop) {
+              const cropX = zone.dataset.cropX || 50
+              const cropY = zone.dataset.cropY || 50
+              img.style.objectPosition = `${cropX}% ${cropY}%`
+              if (!zone.querySelector('.img-crop-btn')) {
+                const cropBtn = document.createElement('button')
+                cropBtn.className = 'img-crop-btn'
+                cropBtn.title = 'Adjust crop position'
+                cropBtn.textContent = '✂️'
+                zone.appendChild(cropBtn)
+                addCropHandler(cropBtn, zone, img)
+              }
+            } else {
+              img.style.objectPosition = ''
+              const cropBtn = zone.querySelector('.img-crop-btn')
+              if (cropBtn) cropBtn.remove()
+            }
           })
+        }
+        
+        // Add crop button handler
+        const cropBtn = zone.querySelector('.img-crop-btn')
+        if (cropBtn) {
+          addCropHandler(cropBtn, zone, zone.querySelector('img'))
         }
       } else {
         zone.innerHTML=`<div class="img-placeholder"><div class="iph-icon">🖼</div><p>Click to add image</p></div>`
       }
       
+      // Helper function for crop button
+      function addCropHandler(btn, zone, img) {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation()
+          btn.classList.toggle('active')
+          
+          if (btn.classList.contains('active')) {
+            // Enable crop mode
+            btn.textContent = '✓'
+            btn.title = 'Drag image to reposition'
+            zone.style.cursor = 'move'
+            img.style.cursor = 'move'
+            
+            let isDragging = false
+            let startX, startY, startCropX, startCropY
+            
+            const mouseDownHandler = (e) => {
+              if (e.target !== img) return
+              e.preventDefault()
+              isDragging = true
+              startX = e.clientX
+              startY = e.clientY
+              startCropX = parseFloat(zone.dataset.cropX) || 50
+              startCropY = parseFloat(zone.dataset.cropY) || 50
+            }
+            
+            const mouseMoveHandler = (e) => {
+              if (!isDragging) return
+              e.preventDefault()
+              
+              const rect = img.getBoundingClientRect()
+              const deltaX = (e.clientX - startX) / rect.width * 100
+              const deltaY = (e.clientY - startY) / rect.height * 100
+              
+              // Invert delta because we're moving the viewport, not the image
+              let newX = startCropX - deltaX
+              let newY = startCropY - deltaY
+              
+              // Clamp values between 0 and 100
+              newX = Math.max(0, Math.min(100, newX))
+              newY = Math.max(0, Math.min(100, newY))
+              
+              zone.dataset.cropX = Math.round(newX)
+              zone.dataset.cropY = Math.round(newY)
+              img.style.objectPosition = `${Math.round(newX)}% ${Math.round(newY)}%`
+            }
+            
+            const mouseUpHandler = () => {
+              isDragging = false
+            }
+            
+            zone.addEventListener('mousedown', mouseDownHandler)
+            document.addEventListener('mousemove', mouseMoveHandler)
+            document.addEventListener('mouseup', mouseUpHandler)
+            
+            zone._cropHandlers = { mouseDownHandler, mouseMoveHandler, mouseUpHandler }
+          } else {
+            // Disable crop mode
+            btn.textContent = '✂️'
+            btn.title = 'Adjust crop position'
+            zone.style.cursor = ''
+            img.style.cursor = ''
+            
+            if (zone._cropHandlers) {
+              zone.removeEventListener('mousedown', zone._cropHandlers.mouseDownHandler)
+              document.removeEventListener('mousemove', zone._cropHandlers.mouseMoveHandler)
+              document.removeEventListener('mouseup', zone._cropHandlers.mouseUpHandler)
+              delete zone._cropHandlers
+            }
+          }
+        })
+      }
+      
       zone.addEventListener('click',(e)=>{
-        // Don't trigger if clicking buttons
-        if (e.target.classList.contains('img-thumbnail-btn') || e.target.classList.contains('img-width-btn')) return
+        // Don't trigger if clicking buttons or in crop mode
+        if (e.target.classList.contains('img-thumbnail-btn') ||
+            e.target.classList.contains('img-width-btn') ||
+            e.target.classList.contains('img-crop-btn') ||
+            zone.querySelector('.img-crop-btn.active')) return
         openImgPop&&openImgPop(src=>{
           const isThumbnail = currentThumbnail === src
           const widthMode = zone.dataset.width || 'fit'
-          zone.innerHTML=`<img src="${src}" alt="">
+          const cropX = zone.dataset.cropX || 50
+          const cropY = zone.dataset.cropY || 50
+          const needsCrop = widthMode === 'full'
+          const imgStyle = needsCrop ? `style="object-position: ${cropX}% ${cropY}%"` : ''
+          const widthIcon = widthMode === 'fit' ? '⇔' : '⇿'
+          const widthTitle = widthMode === 'fit' ? 'Fit' : 'Full'
+          zone.innerHTML=`<img src="${src}" alt="" ${imgStyle}>
             <div class="img-change">Change</div>
             <button class="img-thumbnail-btn ${isThumbnail ? 'active' : ''}" title="${isThumbnail ? 'Current thumbnail' : 'Set as thumbnail'}">
               ${isThumbnail ? '★' : '☆'}
             </button>
-            <button class="img-width-btn" title="Toggle width: ${widthMode === 'fit' ? 'Fit' : 'Full'}">
-              ${widthMode === 'fit' ? '⇔' : '⇿'}
-            </button>`
+            <button class="img-width-btn" title="Width: ${widthTitle}">
+              ${widthIcon}
+            </button>
+            ${needsCrop ? '<button class="img-crop-btn" title="Adjust crop position">✂️</button>' : ''}`
           zone.dataset.src=src
           
           // Re-add thumbnail button handler
@@ -231,7 +382,7 @@ export const BDEFS = {
             })
           }
           
-          // Re-add width button handler
+          // Re-add width button handler (toggles: fit ↔ full)
           const widthBtn = zone.querySelector('.img-width-btn')
           if (widthBtn) {
             widthBtn.addEventListener('click', (e) => {
@@ -240,15 +391,45 @@ export const BDEFS = {
               const newWidth = currentWidth === 'fit' ? 'full' : 'fit'
               zone.dataset.width = newWidth
               
+              // Update wrapper classes
+              wrap.classList.remove('img-full-width')
               if (newWidth === 'full') {
                 wrap.classList.add('img-full-width')
-              } else {
-                wrap.classList.remove('img-full-width')
               }
               
-              widthBtn.textContent = newWidth === 'fit' ? '⇔' : '⇿'
-              widthBtn.title = `Toggle width: ${newWidth === 'fit' ? 'Fit' : 'Full'}`
+              // Update button
+              const widthIcon = newWidth === 'fit' ? '⇔' : '⇿'
+              const widthTitle = newWidth === 'fit' ? 'Fit' : 'Full'
+              widthBtn.textContent = widthIcon
+              widthBtn.title = `Width: ${widthTitle}`
+              
+              // Add or remove crop button
+              const img = zone.querySelector('img')
+              const needsCrop = newWidth === 'full'
+              if (needsCrop) {
+                const cropX = zone.dataset.cropX || 50
+                const cropY = zone.dataset.cropY || 50
+                img.style.objectPosition = `${cropX}% ${cropY}%`
+                if (!zone.querySelector('.img-crop-btn')) {
+                  const cropBtn = document.createElement('button')
+                  cropBtn.className = 'img-crop-btn'
+                  cropBtn.title = 'Adjust crop position'
+                  cropBtn.textContent = '✂️'
+                  zone.appendChild(cropBtn)
+                  addCropHandler(cropBtn, zone, img)
+                }
+              } else {
+                img.style.objectPosition = ''
+                const cropBtn = zone.querySelector('.img-crop-btn')
+                if (cropBtn) cropBtn.remove()
+              }
             })
+          }
+          
+          // Re-add crop button handler
+          const cropBtn = zone.querySelector('.img-crop-btn')
+          if (cropBtn) {
+            addCropHandler(cropBtn, zone, zone.querySelector('img'))
           }
         })
       })
@@ -261,7 +442,9 @@ export const BDEFS = {
       return {
         src: zone?.dataset.src||'',
         caption: el.querySelector('.img-caption')?.innerHTML||'',
-        width: zone?.dataset.width||'fit'
+        width: zone?.dataset.width||'fit',
+        cropX: parseInt(zone?.dataset.cropX) || 50,
+        cropY: parseInt(zone?.dataset.cropY) || 50
       }
     },
   },

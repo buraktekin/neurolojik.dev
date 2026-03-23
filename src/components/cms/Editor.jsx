@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { usePostById } from '../../hooks/usePosts.js'
 import { usePostMutations } from '../../hooks/usePosts.js'
 import { BDEFS } from '../../data/blockDefs.js'
@@ -13,6 +13,9 @@ function uid() {
   return Date.now().toString(36) + Math.random().toString(36).substr(2)
 }
 
+const AUTOSAVE_INTERVAL = 10000 // 10 seconds
+const LOCALSTORAGE_KEY = 'cms_draft_backup_'
+
 const CAT_META = {
   photo:  { badge:'ecb-photo',  label:'📷 Photography' },
   food:   { badge:'ecb-food',   label:'🍜 Food'         },
@@ -23,7 +26,7 @@ const CAT_META = {
 
 export default function Editor({ cat, editId, onBack, onSaved }) {
   const { post, loading: postLoading } = usePostById(editId)
-  const { createPost, updatePost, publishPost } = usePostMutations()
+  const { createPost, updatePost, publishPost, deletePost } = usePostMutations()
   
   const [blocks, setBlocks] = useState([])
   const [thumbnail, setThumbnail] = useState('')
@@ -42,10 +45,17 @@ export default function Editor({ cat, editId, onBack, onSaved }) {
   const [toast, setToast] = useState('')
   const [toastVis, setToastVis] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [autoSaving, setAutoSaving] = useState(false)
+  const [lastSaved, setLastSaved] = useState(null)
   
   const editIdRef = useRef(editId)
   const blocksRef = useRef(blocks)
+  const thumbnailRef = useRef(thumbnail)
+  const autoSaveTimerRef = useRef(null)
+  const hasChangesRef = useRef(false)
+  
   blocksRef.current = blocks
+  thumbnailRef.current = thumbnail
 
   // Initialize blocks and thumbnail when post loads or for new posts
   useEffect(() => {
@@ -57,12 +67,114 @@ export default function Editor({ cat, editId, onBack, onSaved }) {
       }))
       setBlocks(loadedBlocks)
       setThumbnail(post.thumbnail || '')
+      setLastSaved(post.updated_at || post.created_at)
+      editIdRef.current = editId // Set the ref when editing existing post
     } else if (!editId && blocks.length === 0) {
       // New post - use template
       const template = TEMPLATES[cat]?.() || []
       setBlocks(template.map(b => ({ ...b, id: uid() })))
+      
+      // Try to restore from localStorage backup
+      const backupKey = LOCALSTORAGE_KEY + cat
+      const backup = localStorage.getItem(backupKey)
+      if (backup) {
+        try {
+          const parsed = JSON.parse(backup)
+          if (parsed.blocks && parsed.timestamp > Date.now() - 86400000) { // 24 hours
+            setBlocks(parsed.blocks)
+            setThumbnail(parsed.thumbnail || '')
+            showToast('📦 Restored from backup')
+          }
+        } catch (e) {
+          console.error('Failed to restore backup:', e)
+        }
+      }
     }
   }, [editId, post, cat])
+
+  // Auto-save function
+  const autoSaveDraft = useCallback(async () => {
+    if (autoSaving || saving || blocksRef.current.length === 0) return
+    
+    setAutoSaving(true)
+    try {
+      // Serialize blocks - get current data from DOM
+      const serialized = blocksRef.current.map(b => {
+        const data = b._serialize?.() || b.data
+        return { ...b, data }
+      })
+      
+      const titleBlock = serialized.find(b => b.type === 'h1')
+      const titleText = titleBlock?.data?.text || 'Untitled'
+      
+      const sanitizedBlocks = sanitizeBlocks(serialized)
+      
+      const postData = {
+        title: titleText,
+        category: cat,
+        blocks: sanitizedBlocks,
+        thumbnail: thumbnailRef.current || null,
+        status: 'draft',
+      }
+      
+      // Save to localStorage as backup BEFORE database save
+      const backupKey = LOCALSTORAGE_KEY + cat
+      localStorage.setItem(backupKey, JSON.stringify({
+        blocks: blocksRef.current,
+        thumbnail: thumbnailRef.current,
+        timestamp: Date.now()
+      }))
+      
+      // Save to database - update if exists, create if new
+      if (editIdRef.current) {
+        // Update existing draft
+        await updatePost(editIdRef.current, postData)
+      } else {
+        // Create new draft and store its ID
+        const newPost = await createPost(postData)
+        editIdRef.current = newPost.id
+      }
+      
+      // Clear localStorage backup after successful database save
+      localStorage.removeItem(backupKey)
+      
+      setLastSaved(new Date().toISOString())
+      hasChangesRef.current = false
+    } catch (error) {
+      console.error('Auto-save failed:', error)
+      showToast('⚠️ Auto-save failed - data backed up locally')
+    } finally {
+      setAutoSaving(false)
+    }
+  }, [cat, createPost, updatePost, showToast])
+
+  // Auto-save effect
+  useEffect(() => {
+    // Don't auto-save if blocks are empty (initial load)
+    if (blocks.length === 0) return
+    
+    // Mark as changed when blocks or thumbnail change
+    hasChangesRef.current = true
+    
+    // Clear existing timer
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current)
+    }
+    
+    // Set new timer for auto-save
+    autoSaveTimerRef.current = setTimeout(() => {
+      if (hasChangesRef.current && !saving && !autoSaving && blocks.length > 0) {
+        autoSaveDraft()
+      }
+    }, AUTOSAVE_INTERVAL)
+    
+    // Cleanup
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current)
+      }
+    }
+  }, [blocks, thumbnail, autoSaveDraft, saving, autoSaving])
 
   // drag-drop
   const dragSrcId = useRef(null)
@@ -110,6 +222,8 @@ export default function Editor({ cat, editId, onBack, onSaved }) {
         await updatePost(editIdRef.current, postData)
         if (status === 'published') {
           await publishPost(editIdRef.current)
+          // Clear localStorage backup when published
+          localStorage.removeItem(LOCALSTORAGE_KEY + cat)
         }
       } else {
         // Create new post
@@ -117,15 +231,42 @@ export default function Editor({ cat, editId, onBack, onSaved }) {
         editIdRef.current = newPost.id
         if (status === 'published') {
           await publishPost(newPost.id)
+          // Clear localStorage backup when published
+          localStorage.removeItem(LOCALSTORAGE_KEY + cat)
         }
       }
 
+      setLastSaved(new Date().toISOString())
+      hasChangesRef.current = false
       showToast(status === 'published' ? '🚀 Post published!' : '💾 Draft saved')
       onSaved?.()
     } catch (error) {
       console.error('Failed to save post:', error)
       showToast('❌ Failed to save. Please try again.')
     } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleDeleteDraft() {
+    if (!editIdRef.current) {
+      // No draft saved yet, just clear localStorage and go back
+      localStorage.removeItem(LOCALSTORAGE_KEY + cat)
+      onBack()
+      return
+    }
+    
+    if (!confirm('Delete this draft? This cannot be undone.')) return
+    
+    setSaving(true)
+    try {
+      await deletePost(editIdRef.current)
+      localStorage.removeItem(LOCALSTORAGE_KEY + cat)
+      showToast('🗑️ Draft deleted')
+      setTimeout(() => onBack(), 500)
+    } catch (error) {
+      console.error('Failed to delete draft:', error)
+      showToast('❌ Failed to delete draft')
       setSaving(false)
     }
   }
@@ -212,12 +353,43 @@ export default function Editor({ cat, editId, onBack, onSaved }) {
       <div className="ed-header">
         <button className="ed-back" onClick={onBack} disabled={saving}>← Back</button>
         <div className={`ed-badge ${meta.badge}`}>{meta.label}</div>
-        <span className="ed-hint">/ to add block &nbsp;·&nbsp; drag ⠿ to reorder</span>
+        <span className="ed-hint">
+          / to add block &nbsp;·&nbsp; drag ⠿ to reorder
+          {autoSaving && <span style={{color:'var(--purple)',marginLeft:'12px'}}>💾 Auto-saving...</span>}
+          {lastSaved && !autoSaving && (
+            <span style={{color:'var(--text-dim)',marginLeft:'12px',fontSize:'10px'}}>
+              Last saved: {new Date(lastSaved).toLocaleTimeString()}
+            </span>
+          )}
+        </span>
         <div className="ed-actions">
-          <button className="btn-draft" onClick={()=>savePost('draft')} disabled={saving}>
+          {post?.status === 'draft' && (
+            <button
+              className="btn-delete-draft"
+              onClick={handleDeleteDraft}
+              disabled={saving}
+              style={{
+                background:'none',
+                border:'1px solid var(--card-border)',
+                borderRadius:'8px',
+                padding:'10px 18px',
+                fontFamily:'JetBrains Mono,monospace',
+                fontSize:'10px',
+                letterSpacing:'2px',
+                textTransform:'uppercase',
+                color:'var(--orange)',
+                cursor:'pointer',
+                transition:'all .2s',
+                marginRight:'8px'
+              }}
+            >
+              🗑️ Delete Draft
+            </button>
+          )}
+          <button className="btn-draft" onClick={()=>savePost('draft')} disabled={saving || autoSaving}>
             {saving ? 'Saving...' : 'Save Draft'}
           </button>
-          <button className="btn-pub" onClick={()=>savePost('published')} disabled={saving}>
+          <button className="btn-pub" onClick={()=>savePost('published')} disabled={saving || autoSaving}>
             {saving ? 'Publishing...' : 'Publish →'}
           </button>
         </div>

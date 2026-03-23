@@ -73,7 +73,7 @@ export default function Blog({ onEditPost }) {
       setActiveShape(shapeName)
       setShapeLbl(LABELS[SHAPES.indexOf(shapeName)])
     }
-    
+
     window.addEventListener('neuralShapeChange', handleShapeChangeEvent)
     return () => window.removeEventListener('neuralShapeChange', handleShapeChangeEvent)
   }, [])
@@ -98,7 +98,7 @@ export default function Blog({ onEditPost }) {
     setActiveShape(shape)
     setShapeLbl(LABELS[SHAPES.indexOf(shape)])
     setShapeVis(true)
-    
+
     // Dispatch custom event to tell neural animation to change shape immediately
     window.dispatchEvent(new CustomEvent('forceShapeChange', {
       detail: { shape }
@@ -155,12 +155,12 @@ export default function Blog({ onEditPost }) {
   return (
     <>
       <SEO />
-      
+
       {/* Post Detail Modal */}
       {selectedPost && (
-        <PostDetail 
-          slug={selectedPost} 
-          onClose={() => setSelectedPost(null)} 
+        <PostDetail
+          slug={selectedPost}
+          onClose={() => setSelectedPost(null)}
         />
       )}
 
@@ -191,10 +191,10 @@ export default function Blog({ onEditPost }) {
 
       <div className={`mobile-nav${mobOpen ? ' open' : ''}`} id="mob-nav">
         {['About', 'Topics', 'Blog', 'Connect'].map(s => (
-          <a 
-            key={s} 
-            href={`#${s.toLowerCase()}`} 
-            className="mob-link" 
+          <a
+            key={s}
+            href={`#${s.toLowerCase()}`}
+            className="mob-link"
             onClick={(e) => handleNavClick(e, s === 'Blog' ? 'featured' : s.toLowerCase())}
           >
             {s}
@@ -214,10 +214,10 @@ export default function Blog({ onEditPost }) {
           pointerEvents: 'auto',
           display: 'block'
         }} />
-        
+
         {/* React fallback (commented out - uncomment if plain JS fails) */}
         {/* <NeuralCanvas activeShape={activeShape} onShapeChange={handleShapeChange} /> */}
-        
+
         <div className="hero-inner">
           <p className="hero-tag">// neurolojik.dev</p>
           <h1 className="hero-name">
@@ -230,11 +230,11 @@ export default function Blog({ onEditPost }) {
           </p>
           <div className="hero-pills">
             {pills.map(shape => (
-              <a 
-                key={shape} 
-                href="#" 
+              <a
+                key={shape}
+                href="#"
                 className={`pill${activeShape === shape ? ' active-pill' : ''}`}
-                data-shape={shape} 
+                data-shape={shape}
                 onClick={e => handlePillClick(e, shape)}
               >
                 {shape.charAt(0).toUpperCase() + shape.slice(1)}
@@ -272,11 +272,13 @@ export default function Blog({ onEditPost }) {
         </div>
         <div className="about-right reveal rd2">
           <p className="section-label">About</p>
-          <p>I'm <strong>Burak Tekin</strong> — a software engineer at IBM who refuses to be defined by a job title.</p>
-          <p>This blog is my <strong>neural archive</strong> — where half-eaten street food in Tokyo sits next to architecture rants, where a travel essay bleeds into a React deep-dive.</p>
+          <p>I'm <strong>Burak Tekin</strong> — a software engineer at IBM in Germany with a background in Computational Linguistics from University of Stuttgart.</p>
+          <p>But <strong>"neurolojik"</strong> is where my other circuits fire.</p>
+          <p>This blog is my <strong>neural archive</strong> — Cooking, photography, travel, and software engineering may seem unrelated, yet they all share the same principle: complex systems producing simple pleasure. A perfectly charred dish, a photon captured at the right millisecond, or a piece of elegant code — each is a small neurological reward.</p>
+          <p>This blog is where those experiments live. Welcome in!</p>
           <div className="terminal">
             <div className="tl">whoami</div>
-            <div className="to"><span className="th">burak.tekin</span> // engineer · photographer · traveller</div>
+            <div className="to"><span className="th">burak.tekin</span> // Software Engineer · Cook · Photographer · Traveller</div>
             <div className="tl">cat interests.txt</div>
             <div className="to"><span className="th">food</span>, <span className="th">photography</span>, <span className="th">travel</span>, <span className="th">life</span>, <span className="th">code</span></div>
             <div className="tl">_<span className="tcur" /></div>
@@ -457,9 +459,9 @@ export default function Blog({ onEditPost }) {
           <h2 className="section-title reveal rd1">More reading</h2>
           <div className="latest-list">
             {latestPosts.map((post, index) => (
-              <a 
-                key={post.id} 
-                href="#" 
+              <a
+                key={post.id}
+                href="#"
                 className="latest-item reveal"
                 onClick={(e) => {
                   e.preventDefault()
@@ -474,10 +476,10 @@ export default function Blog({ onEditPost }) {
                       {CAT_META[post.category].label}
                     </span>
                     <span>·</span>
-                    <span>{new Date(post.published_at || post.created_at).toLocaleDateString('en-US', { 
-                      month: 'short', 
-                      day: 'numeric', 
-                      year: 'numeric' 
+                    <span>{new Date(post.published_at || post.created_at).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric'
                     })}</span>
                   </div>
                 </div>
